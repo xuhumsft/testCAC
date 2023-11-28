@@ -27,7 +27,7 @@ jobs:
       directory: '${{ github.workspace }}'
       cloudEnv: 'AzurePPE'
       creds: ${{ secrets.AZURE_SENTINEL_CREDENTIALS_d8c5ebf1002749639a9014ee7ad076cb }}
-      contentTypes: 'AnalyticsRule'
+      contentTypes: 'AnalyticsRule,Playbook'
       branch: 'main_SentinelExport_1676594102'
       sourceControlId: 'd8c5ebf1-0027-4963-9a90-14ee7ad076cb'
       rootDirectory: '${{ github.workspace }}'
