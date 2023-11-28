@@ -12,47 +12,52 @@
       "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7d170232-a220-4560-86ae-d40d9e8b1bde')]",
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "kind": "Scheduled",
-      "apiVersion": "2022-09-01-preview",
+      "apiVersion": "2023-02-01-preview",
       "properties": {
-        "queryFrequency": "P1D",
-        "queryPeriod": "P7D",
-        "triggerOperator": "GreaterThan",
-        "triggerThreshold": 0,
-        "severity": "Medium",
-        "query": "GitHubAuditData\n| where Visibility != PreviousVisibility\n| project Actor, PreviousVisibility, Visibility\n| extend AccountCustomEntity = Actor\n",
-        "suppressionDuration": "PT1H",
-        "suppressionEnabled": false,
-        "incidentConfiguration": {
-          "createIncident": true,
-          "groupingConfiguration": {
-            "enabled": false,
-            "reopenClosedIncident": false,
-            "lookbackDuration": "PT5M",
-            "matchingMethod": "AllEntities",
-            "groupByEntities": [],
-            "groupByAlertDetails": null,
-            "groupByCustomDetails": null
-          }
-        },
+        "displayName": "Preview GitHub - User visibility Was changed",
+        "description": "Detect activities when a user visibility Was changed. This query runs every day and its severity is Medium.",
+        "alertDetailsOverride": null,
+        "customDetails": null,
         "entityMappings": [
           {
             "entityType": "Account",
             "fieldMappings": [
               {
-                "identifier": "FullName",
-                "columnName": "AccountCustomEntity"
+                "columnName": "AccountCustomEntity",
+                "identifier": "FullName"
               }
             ]
           }
         ],
+        "eventGroupingSettings": null,
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": null,
+            "groupByCustomDetails": null,
+            "groupByEntities": [],
+            "lookbackDuration": "PT5M",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "GitHubAuditData\n| where Visibility != PreviousVisibility\n| project Actor, PreviousVisibility, Visibility\n| extend AccountCustomEntity = Actor\n",
+        "queryPeriod": "P7D",
+        "queryFrequency": "P1D",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
         "tactics": [
           "InitialAccess"
         ],
         "techniques": [],
-        "displayName": "Preview GitHub - User visibility Was changed",
-        "enabled": false,
-        "description": "Detect activities when a user visibility Was changed. This query runs every day and its severity is Medium.",
-        "alertRuleTemplateName": null
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
       }
     }
   ]
