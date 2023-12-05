@@ -12,37 +12,42 @@
       "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7ec29172-c6ed-4635-907b-79b1a8899ed5')]",
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "kind": "Scheduled",
-      "apiVersion": "2022-09-01-preview",
+      "apiVersion": "2023-02-01-preview",
       "properties": {
-        "queryFrequency": "PT5H",
-        "queryPeriod": "PT5H",
-        "triggerOperator": "GreaterThan",
-        "triggerThreshold": 0,
+        "displayName": "Valid Analytics Rule 2",
+        "description": "",
+        "alertDetailsOverride": null,
+        "customDetails": null,
+        "entityMappings": null,
         "eventGroupingSettings": {
           "aggregationKind": "SingleAlert"
         },
-        "severity": "Medium",
-        "query": "Heartbeat\r\n| take 10",
-        "suppressionDuration": "PT5H",
-        "suppressionEnabled": false,
         "incidentConfiguration": {
           "createIncident": false,
           "groupingConfiguration": {
             "enabled": false,
-            "reopenClosedIncident": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
             "lookbackDuration": "PT5H",
             "matchingMethod": "AllEntities",
-            "groupByEntities": [],
-            "groupByAlertDetails": [],
-            "groupByCustomDetails": []
+            "reopenClosedIncident": false
           }
         },
+        "query": "Heartbeat\r\n| take 10",
+        "queryPeriod": "PT5H",
+        "queryFrequency": "PT5H",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
         "tactics": [],
         "techniques": [],
-        "displayName": "Valid Analytics Rule 2",
-        "enabled": true,
-        "description": "",
-        "alertRuleTemplateName": null
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": true
       }
     }
   ]
