@@ -12,47 +12,52 @@
       "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b065ef41-fa42-4976-a001-d995ac65a48b')]",
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "kind": "Scheduled",
-      "apiVersion": "2022-09-01-preview",
+      "apiVersion": "2023-02-01-preview",
       "properties": {
-        "queryFrequency": "P1D",
-        "queryPeriod": "P7D",
-        "triggerOperator": "GreaterThan",
-        "triggerThreshold": 0,
-        "severity": "Medium",
-        "query": "GitHubAuditData\n| where Action == \"payment_method.remove\"\n| extend AccountCustomEntity = Actor\n",
-        "suppressionDuration": "PT1H",
-        "suppressionEnabled": false,
-        "incidentConfiguration": {
-          "createIncident": true,
-          "groupingConfiguration": {
-            "enabled": false,
-            "reopenClosedIncident": false,
-            "lookbackDuration": "PT5M",
-            "matchingMethod": "AllEntities",
-            "groupByEntities": [],
-            "groupByAlertDetails": null,
-            "groupByCustomDetails": null
-          }
-        },
+        "displayName": "Preview GitHub - A payment method was removed",
+        "description": "Detect activities when a payment method was removed. This query runs every day and its severity is Medium.",
+        "alertDetailsOverride": null,
+        "customDetails": null,
         "entityMappings": [
           {
             "entityType": "Account",
             "fieldMappings": [
               {
-                "identifier": "FullName",
-                "columnName": "AccountCustomEntity"
+                "columnName": "AccountCustomEntity",
+                "identifier": "FullName"
               }
             ]
           }
         ],
+        "eventGroupingSettings": null,
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": null,
+            "groupByCustomDetails": null,
+            "groupByEntities": [],
+            "lookbackDuration": "PT5M",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "GitHubAuditData\n| where Action == \"payment_method.remove\"\n| extend AccountCustomEntity = Actor\n",
+        "queryPeriod": "P7D",
+        "queryFrequency": "P1D",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
         "tactics": [
           "InitialAccess"
         ],
         "techniques": [],
-        "displayName": "Preview GitHub - A payment method was removed",
-        "enabled": false,
-        "description": "Detect activities when a payment method was removed. This query runs every day and its severity is Medium.",
-        "alertRuleTemplateName": null
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
       }
     }
   ]
