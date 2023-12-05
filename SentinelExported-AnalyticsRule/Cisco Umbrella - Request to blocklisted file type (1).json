@@ -8,39 +8,23 @@
   },
   "resources": [
     {
-      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/ef1986c3-f7a8-48b3-8fe7-36cb4e597ae1')]",
-      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/ef1986c3-f7a8-48b3-8fe7-36cb4e597ae1')]",
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/dbdd85fb-06b1-4270-b9cc-b6e413829469')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/dbdd85fb-06b1-4270-b9cc-b6e413829469')]",
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "kind": "Scheduled",
-      "apiVersion": "2022-09-01-preview",
+      "apiVersion": "2023-02-01-preview",
       "properties": {
-        "queryFrequency": "PT10M",
-        "queryPeriod": "PT10M",
-        "triggerOperator": "GreaterThan",
-        "triggerThreshold": 0,
-        "severity": "Medium",
-        "query": "let file_ext_blocklist = dynamic(['.ps1', '.vbs', '.bat', '.scr']);\nlet lbtime = 10m;\nCisco_Umbrella\n| where TimeGenerated > ago(lbtime)\n| where EventType == 'proxylogs'\n| where DvcAction =~ 'Allowed'\n| extend file_ext = extract(@'.*(\\.\\w+)$', 1, UrlOriginal)\n| extend Filename = extract(@'.*\\/*\\/(.*\\.\\w+)$', 1, UrlOriginal)\n| where file_ext in (file_ext_blocklist)\n| project TimeGenerated, SrcIpAddr, Identities, Filename\n| extend IPCustomEntity = SrcIpAddr\n| extend AccountCustomEntity = Identities\n",
-        "suppressionDuration": "PT1H",
-        "suppressionEnabled": false,
-        "incidentConfiguration": {
-          "createIncident": true,
-          "groupingConfiguration": {
-            "enabled": false,
-            "reopenClosedIncident": false,
-            "lookbackDuration": "PT5M",
-            "matchingMethod": "AllEntities",
-            "groupByEntities": [],
-            "groupByAlertDetails": null,
-            "groupByCustomDetails": null
-          }
-        },
+        "displayName": "Cisco Umbrella - Request to blocklisted file type",
+        "description": "Detects request to potentially harmful file types (.ps1, .bat, .vbs, etc.).",
+        "alertDetailsOverride": null,
+        "customDetails": null,
         "entityMappings": [
           {
             "entityType": "Account",
             "fieldMappings": [
               {
-                "identifier": "FullName",
-                "columnName": "AccountCustomEntity"
+                "columnName": "AccountCustomEntity",
+                "identifier": "FullName"
               }
             ]
           },
@@ -48,20 +32,41 @@
             "entityType": "IP",
             "fieldMappings": [
               {
-                "identifier": "Address",
-                "columnName": "IPCustomEntity"
+                "columnName": "IPCustomEntity",
+                "identifier": "Address"
               }
             ]
           }
         ],
+        "eventGroupingSettings": null,
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": null,
+            "groupByCustomDetails": null,
+            "groupByEntities": [],
+            "lookbackDuration": "PT5M",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "let file_ext_blocklist = dynamic(['.ps1', '.vbs', '.bat', '.scr']);\nlet lbtime = 10m;\nCisco_Umbrella\n| where TimeGenerated > ago(lbtime)\n| where EventType == 'proxylogs'\n| where DvcAction =~ 'Allowed'\n| extend file_ext = extract(@'.*(\\.\\w+)$', 1, UrlOriginal)\n| extend Filename = extract(@'.*\\/*\\/(.*\\.\\w+)$', 1, UrlOriginal)\n| where file_ext in (file_ext_blocklist)\n| project TimeGenerated, SrcIpAddr, Identities, Filename\n| extend IPCustomEntity = SrcIpAddr\n| extend AccountCustomEntity = Identities\n",
+        "queryPeriod": "PT10M",
+        "queryFrequency": "PT10M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
         "tactics": [
           "InitialAccess"
         ],
         "techniques": [],
-        "displayName": "Cisco Umbrella - Request to blocklisted file type",
-        "enabled": false,
-        "description": "Detects request to potentially harmful file types (.ps1, .bat, .vbs, etc.).",
-        "alertRuleTemplateName": null
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
       }
     }
   ]
