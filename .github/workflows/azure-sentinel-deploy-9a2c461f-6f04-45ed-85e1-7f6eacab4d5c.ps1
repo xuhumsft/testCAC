@@ -4,7 +4,6 @@ $ResourceGroupName = $Env:resourceGroupName
 $WorkspaceName = $Env:workspaceName
 $WorkspaceId = $Env:workspaceId
 $Directory = $Env:directory
-$Creds = $Env:creds
 $contentTypes = $Env:contentTypes
 $contentTypeMapping = @{
     "AnalyticsRule"=@("Microsoft.OperationalInsights/workspaces/providers/alertRules", "Microsoft.OperationalInsights/workspaces/providers/alertRules/actions");
@@ -143,11 +142,11 @@ function PushCsvToRepo() {
         git push -u origin $newResourceBranch
         New-Item -ItemType "directory" -Path ".sentinel"
     } else {
-        git fetch > $null
+        git fetch &gt; $null
         git checkout $newResourceBranch
     }
 
-    Write-Output $content > $relativeCsvPath
+    Write-Output $content &gt; $relativeCsvPath
     git add $relativeCsvPath
     git commit -m "Modified tracking table"
     git push -u origin $newResourceBranch
@@ -187,57 +186,6 @@ function AttemptInvokeRestMethod($method, $url, $body, $contentTypes, $maxRetrie
     }
     While ($Stoploop -eq $false)
     return $result
-}
-
-function AttemptAzLogin($psCredential, $tenantId, $cloudEnv) {
-    $maxLoginRetries = 3
-    $delayInSeconds = 30
-    $retryCount = 1
-    $stopTrying = $false
-    do {
-        try {
-            Connect-AzAccount -ServicePrincipal -Tenant $tenantId -Credential $psCredential -Environment $cloudEnv | out-null;
-            Write-Host "Login Successful"
-            $stopTrying = $true
-        }
-        catch {
-            if ($retryCount -ge $maxLoginRetries) {
-                Write-Host "Login failed after $maxLoginRetries attempts."
-                $stopTrying = $true
-            }
-            else {
-                Write-Host "Login attempt failed, retrying in $delayInSeconds seconds."
-                Start-Sleep -Seconds $delayInSeconds
-                $retryCount++
-            }
-        }
-    }
-    while (-not $stopTrying)
-}
-
-function ConnectAzCloud {
-    $RawCreds = $Creds | ConvertFrom-Json
-
-    Clear-AzContext -Scope Process;
-    Clear-AzContext -Scope CurrentUser -Force -ErrorAction SilentlyContinue;
-
-    if ($CloudEnv -ne 'AzureChinaCloud' -and $CloudEnv -ne 'AzureUSGovernment')
-    {
-        Write-Output "Attempting Adding new cloud";
-
-        Add-AzEnvironment `
-        -Name $CloudEnv `
-        -ActiveDirectoryEndpoint $RawCreds.activeDirectoryEndpointUrl `
-        -ResourceManagerEndpoint $RawCreds.resourceManagerEndpointUrl `
-        -ActiveDirectoryServiceEndpointResourceId $RawCreds.activeDirectoryServiceEndpointResourceId `
-        -GraphEndpoint $RawCreds.graphEndpointUrl | out-null;
-    }
-
-    $servicePrincipalKey = ConvertTo-SecureString $RawCreds.clientSecret.replace("'", "''") -AsPlainText -Force
-    $psCredential = New-Object System.Management.Automation.PSCredential($RawCreds.clientId, $servicePrincipalKey)
-
-    AttemptAzLogin $psCredential $RawCreds.tenantId $CloudEnv
-    Set-AzContext -Tenant $RawCreds.tenantId | out-null;
 }
 
 function AttemptDeployMetadata($deploymentName, $resourceGroupName, $templateObject, $templateType, $paramFileType, $containsWorkspaceParam) {
@@ -633,7 +581,7 @@ function TryGetCsvFile {
     $resourceBranchExists = git ls-remote --heads "https://github.com/$githubRepository" $newResourceBranch | wc -l
 
     if ($resourceBranchExists -eq 1) {
-        git fetch > $null
+        git fetch &gt; $null
         git checkout $newResourceBranch
 
         if (Test-Path $relativeCsvPath) {
@@ -646,12 +594,6 @@ function TryGetCsvFile {
 function main() {
     git config --global user.email "donotreply@microsoft.com"
     git config --global user.name "Sentinel"
-
-    if ($CloudEnv -ne 'AzureCloud')
-    {
-        Write-Output "Attempting Sign In to Azure Cloud"
-        ConnectAzCloud
-    }
 
     TryGetCsvFile
     LoadDeploymentConfig
