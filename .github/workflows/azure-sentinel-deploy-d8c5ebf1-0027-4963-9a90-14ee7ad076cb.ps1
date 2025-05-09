@@ -4,7 +4,6 @@ $ResourceGroupName = $Env:resourceGroupName
 $WorkspaceName = $Env:workspaceName
 $WorkspaceId = $Env:workspaceId
 $Directory = $Env:directory
-$Creds = $Env:creds
 $contentTypes = $Env:contentTypes
 $contentTypeMapping = @{
     "AnalyticsRule"=@("Microsoft.OperationalInsights/workspaces/providers/alertRules", "Microsoft.OperationalInsights/workspaces/providers/alertRules/actions");
@@ -14,7 +13,7 @@ $contentTypeMapping = @{
     "Playbook"=@("Microsoft.Web/connections", "Microsoft.Logic/workflows", "Microsoft.Web/customApis");
     "Workbook"=@("Microsoft.Insights/workbooks");
 }
-$sourceControlId = $Env:sourceControlId 
+$sourceControlId = $Env:sourceControlId
 $rootDirectory = $Env:rootDirectory
 $githubAuthToken = $Env:githubAuthToken
 $githubRepository = $Env:GITHUB_REPOSITORY
@@ -64,6 +63,9 @@ $metadataFilePath = "metadata.json"
         },
         "contentId": {
             "type": "string"
+        },
+        "customVersion": {
+            "type": "string"
         }
     },
     "variables": {
@@ -77,6 +79,7 @@ $metadataFilePath = "metadata.json"
             "properties": {
                 "parentId": "[parameters('parentResourceId')]",
                 "kind": "[parameters('kind')]",
+                "customVersion": "[parameters('customVersion')]",
                 "source": {
                     "kind": "SourceRepository",
                     "name": "Repositories",
@@ -86,7 +89,7 @@ $metadataFilePath = "metadata.json"
         }
     ]
 }
-"@ | Out-File -FilePath $metadataFilePath 
+"@ | Out-File -FilePath $metadataFilePath
 
 $resourceTypes = $contentTypes.Split(",") | ForEach-Object { $contentTypeMapping[$_] } | ForEach-Object { $_.ToLower() }
 $MaxRetries = 3
@@ -106,7 +109,7 @@ $header = @{
     "authorization" = "Bearer $githubAuthToken"
 }
 
-#Gets all files and commit shas using Get Trees API 
+#Gets all files and commit shas using Get Trees API
 function GetGithubTree {
     $branchResponse = AttemptInvokeRestMethod "Get" "https://api.github.com/repos/$githubRepository/branches/$branchName" $null $null 3
     $treeUrl = "https://api.github.com/repos/$githubRepository/git/trees/" + $branchResponse.commit.sha + "?recursive=true"
@@ -114,12 +117,13 @@ function GetGithubTree {
     return $getTreeResponse
 }
 
-#Creates a table using the reponse from the tree api, creates a table 
+#Creates a table using the reponse from the tree api, creates a table
 function GetCommitShaTable($getTreeResponse) {
     $shaTable = @{}
+    $supportedExtensions = @(".json", ".bicep", ".bicepparam");
     $getTreeResponse.tree | ForEach-Object {
         $truePath = AbsolutePathWithSlash $_.path
-        if (([System.IO.Path]::GetExtension($_.path) -eq ".json") -or ($truePath -eq $configPath))
+        if ((([System.IO.Path]::GetExtension($_.path) -in $supportedExtensions)) -or ($truePath -eq $configPath))
         {
             $shaTable.Add($truePath, $_.sha)
         }
@@ -130,7 +134,7 @@ function GetCommitShaTable($getTreeResponse) {
 function PushCsvToRepo() {
     $content = ConvertTableToString
     $relativeCsvPath = RelativePathWithBackslash $csvPath
-    $resourceBranchExists = git ls-remote --heads "https://github.com/$githubRepository" $newResourceBranch | wc -l 
+    $resourceBranchExists = git ls-remote --heads "https://github.com/$githubRepository" $newResourceBranch | wc -l
 
     if ($resourceBranchExists -eq 0) {
         git switch --orphan $newResourceBranch
@@ -141,7 +145,7 @@ function PushCsvToRepo() {
         git fetch > $null
         git checkout $newResourceBranch
     }
-    
+
     Write-Output $content > $relativeCsvPath
     git add $relativeCsvPath
     git commit -m "Modified tracking table"
@@ -154,10 +158,10 @@ function ReadCsvToTable {
     $HashTable=@{}
     foreach($r in $csvTable)
     {
-        $key = AbsolutePathWithSlash $r.FileName 
+        $key = AbsolutePathWithSlash $r.FileName
         $HashTable[$key]=$r.CommitSha
-    }   
-    return $HashTable    
+    }
+    return $HashTable
 }
 
 function AttemptInvokeRestMethod($method, $url, $body, $contentTypes, $maxRetries) {
@@ -184,53 +188,7 @@ function AttemptInvokeRestMethod($method, $url, $body, $contentTypes, $maxRetrie
     return $result
 }
 
-function AttemptAzLogin($psCredential, $tenantId, $cloudEnv) {
-    $maxLoginRetries = 3
-    $delayInSeconds = 30
-    $retryCount = 1
-    $stopTrying = $false
-    do {
-        try {
-            Connect-AzAccount -ServicePrincipal -Tenant $tenantId -Credential $psCredential -Environment $cloudEnv | out-null;
-            Write-Host "Login Successful"
-            $stopTrying = $true
-        }
-        catch {
-            if ($retryCount -ge $maxLoginRetries) {
-                Write-Host "Login failed after $maxLoginRetries attempts."
-                $stopTrying = $true
-            }
-            else {
-                Write-Host "Login attempt failed, retrying in $delayInSeconds seconds."
-                Start-Sleep -Seconds $delayInSeconds
-                $retryCount++
-            }
-        }
-    }
-    while (-not $stopTrying)
-}
-
-function ConnectAzCloud {
-    $RawCreds = $Creds | ConvertFrom-Json
-
-    Clear-AzContext -Scope Process;
-    Clear-AzContext -Scope CurrentUser -Force -ErrorAction SilentlyContinue;
-    
-    Add-AzEnvironment `
-        -Name $CloudEnv `
-        -ActiveDirectoryEndpoint $RawCreds.activeDirectoryEndpointUrl `
-        -ResourceManagerEndpoint $RawCreds.resourceManagerEndpointUrl `
-        -ActiveDirectoryServiceEndpointResourceId $RawCreds.activeDirectoryServiceEndpointResourceId `
-        -GraphEndpoint $RawCreds.graphEndpointUrl | out-null;
-
-    $servicePrincipalKey = ConvertTo-SecureString $RawCreds.clientSecret.replace("'", "''") -AsPlainText -Force
-    $psCredential = New-Object System.Management.Automation.PSCredential($RawCreds.clientId, $servicePrincipalKey)
-
-    AttemptAzLogin $psCredential $RawCreds.tenantId $CloudEnv
-    Set-AzContext -Tenant $RawCreds.tenantId | out-null;
-}
-
-function AttemptDeployMetadata($deploymentName, $resourceGroupName, $templateObject) {
+function AttemptDeployMetadata($deploymentName, $resourceGroupName, $templateObject, $templateType, $paramFileType, $containsWorkspaceParam) {
     $deploymentInfo = $null
     try {
         $deploymentInfo = Get-AzResourceGroupDeploymentOperation -DeploymentName $deploymentName -ResourceGroupName $ResourceGroupName -ErrorAction Ignore
@@ -245,6 +203,8 @@ function AttemptDeployMetadata($deploymentName, $resourceGroupName, $templateObj
         if ($sentinelContentKinds.Count -gt 0) {
             $contentKind = ToContentKind $sentinelContentKinds $resource $templateObject
             $contentId = $resource.Split("/")[-1]
+            $metadataCustomVersion = GetMetadataCustomVersion $templateType $paramFileType $containsWorkspaceParam
+
             try {
                 New-AzResourceGroupDeployment -Name "md-$deploymentName" -ResourceGroupName $ResourceGroupName -TemplateFile $metadataFilePath `
                     -parentResourceId $resource `
@@ -252,6 +212,7 @@ function AttemptDeployMetadata($deploymentName, $resourceGroupName, $templateObj
                     -contentId $contentId `
                     -sourceControlId $sourceControlId `
                     -workspace $workspaceName `
+                    -customVersion $metadataCustomVersion `
                     -ErrorAction Stop | Out-Host
                 Write-Host "[Info] Created metadata metadata for $contentKind with parent resource id $resource"
             }
@@ -262,13 +223,24 @@ function AttemptDeployMetadata($deploymentName, $resourceGroupName, $templateObj
     }
 }
 
+function GetMetadataCustomVersion($templateType, $paramFileType, $containsWorkspaceParam){
+    $customVersion = $templateType + "-" + $paramFileType
+    if($containsWorkspaceParam){
+        $customVersion += "-WorkspaceParam"
+    }
+    if($smartDeployment -eq "true"){
+        $customVersion += "-SmartTracking"
+    }
+    return $customVersion
+}
+
 function GetContentKinds($resource) {
     return $sentinelResourcePatterns.Keys | Where-Object { $resource -match $sentinelResourcePatterns[$_] }
 }
 
 function ToContentKind($contentKinds, $resource, $templateObject) {
     if ($contentKinds.Count -eq 1) {
-       return $contentKinds 
+       return $contentKinds
     }
     if ($null -ne $resource -and $resource.Contains('savedSearches')) {
        if ($templateObject.resources.properties.Category -eq "Hunting Queries") {
@@ -279,13 +251,22 @@ function ToContentKind($contentKinds, $resource, $templateObject) {
     return $null
 }
 
-function IsValidTemplate($path, $templateObject) {
+function IsValidTemplate($path, $templateObject, $parameterFile) {
     Try {
         if (DoesContainWorkspaceParam $templateObject) {
-            Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $path -workspace $WorkspaceName
+            if ($parameterFile) {
+                Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $path -TemplateParameterFile $parameterFile -workspace $WorkspaceName
+            }
+            else {
+                Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $path -workspace $WorkspaceName
+            }
         }
         else {
-            Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $path
+            if ($parameterFile) {
+                Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $path -TemplateParameterFile $parameterFile
+            } else {
+                Test-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $path
+            }
         }
 
         return $true
@@ -310,7 +291,7 @@ function IsRetryable($deploymentName) {
 function IsValidResourceType($template) {
     try {
         $isAllowedResources = $true
-        $template.resources | ForEach-Object { 
+        $template.resources | ForEach-Object {
             $isAllowedResources = $resourceTypes.contains($_.type.ToLower()) -and $isAllowedResources
         }
     }
@@ -325,56 +306,59 @@ function DoesContainWorkspaceParam($templateObject) {
     $templateObject.parameters.PSobject.Properties.Name -contains "workspace"
 }
 
-function AttemptDeployment($path, $parameterFile, $deploymentName, $templateObject) {
+function AttemptDeployment($path, $parameterFile, $deploymentName, $templateObject, $templateType) {
     Write-Host "[Info] Deploying $path with deployment name $deploymentName"
 
-    $isValid = IsValidTemplate $path $templateObject
+    $isValid = IsValidTemplate $path $templateObject $parameterFile
     if (-not $isValid) {
+        Write-Host "[Error] Not deploying $path since the template is not valid"
         return $false
     }
     $isSuccess = $false
     $currentAttempt = 0
-    While (($currentAttempt -lt $MaxRetries) -and (-not $isSuccess)) 
+    While (($currentAttempt -lt $MaxRetries) -and (-not $isSuccess))
     {
         $currentAttempt ++
-        Try 
+        Try
         {
             Write-Host "[Info] Deploy $path with parameter file: [$parameterFile]"
-            if (DoesContainWorkspaceParam $templateObject) 
+            $paramFileType = if(!$parameterFile) {"NoParam"} elseif($parameterFile -like "*.bicepparam") {"BicepParam"} else {"JsonParam"}
+            $containsWorkspaceParam = DoesContainWorkspaceParam $templateObject
+            if ($containsWorkspaceParam)
             {
                 if ($parameterFile) {
                     New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $path -workspace $workspaceName -TemplateParameterFile $parameterFile -ErrorAction Stop | Out-Host
                 }
-                else 
+                else
                 {
                     New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $path -workspace $workspaceName -ErrorAction Stop | Out-Host
                 }
             }
-            else 
+            else
             {
                 if ($parameterFile) {
                     New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $path -TemplateParameterFile $parameterFile -ErrorAction Stop | Out-Host
                 }
-                else 
+                else
                 {
                     New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $ResourceGroupName -TemplateFile $path -ErrorAction Stop | Out-Host
                 }
             }
-            AttemptDeployMetadata $deploymentName $ResourceGroupName $templateObject
+            AttemptDeployMetadata $deploymentName $ResourceGroupName $templateObject $templateType $paramFileType $containsWorkspaceParam
 
             $isSuccess = $true
         }
-        Catch [Exception] 
+        Catch [Exception]
         {
             $err = $_
-            if (-not (IsRetryable $deploymentName)) 
+            if (-not (IsRetryable $deploymentName))
             {
                 Write-Host "[Warning] Failed to deploy $path with error: $err"
                 break
             }
-            else 
+            else
             {
-                if ($currentAttempt -le $MaxRetries) 
+                if ($currentAttempt -le $MaxRetries)
                 {
                     Write-Host "[Warning] Failed to deploy $path with error: $err. Retrying in $secondsBetweenAttempts seconds..."
                     Start-Sleep -Seconds $secondsBetweenAttempts
@@ -430,7 +414,7 @@ function LoadDeploymentConfig() {
 
 function filterContentFile($fullPath) {
 	$temp = RelativePathWithBackslash $fullPath
-	return $global:excludeContentFiles | ? {$temp.StartsWith($_, 'CurrentCultureIgnoreCase')}
+	return $global:excludeContentFiles | Where-Object {$temp.StartsWith($_, 'CurrentCultureIgnoreCase')}
 }
 
 function RelativePathWithBackslash($absolutePath) {
@@ -443,8 +427,12 @@ function AbsolutePathWithSlash($relativePath) {
 
 #resolve parameter file name, return $null if there is none.
 function GetParameterFile($path) {
+    if ($path.Length -eq 0) {
+        return $null
+    }
+
     $index = RelativePathWithBackslash $path
-    $key = ($global:parameterFileMapping.Keys | ? { $_ -eq $index })
+    $key = ($global:parameterFileMapping.Keys | Where-Object { $_ -eq $index })
     if ($key) {
         $mappedParameterFile = AbsolutePathWithSlash $global:parameterFileMapping[$key]
         if (Test-Path $mappedParameterFile) {
@@ -452,30 +440,53 @@ function GetParameterFile($path) {
         }
     }
 
-    $parameterFilePrefix = $path.TrimEnd(".json")
-    
+    $extension = [System.IO.Path]::GetExtension($path)
+    if ($extension -ne ".json" -and $extension -ne ".bicep") {
+        return $null
+    }
+
+    $parameterFilePrefix = $path.Substring(0, $path.Length - $extension.Length)
+
+    # Check for workspace-specific parameter file
+    if ($extension -eq ".bicep") {
+        $workspaceParameterFile = $parameterFilePrefix + "-$WorkspaceId.bicepparam"
+        if (Test-Path $workspaceParameterFile) {
+            return $workspaceParameterFile
+        }
+    }
+
     $workspaceParameterFile = $parameterFilePrefix + ".parameters-$WorkspaceId.json"
     if (Test-Path $workspaceParameterFile) {
         return $workspaceParameterFile
     }
-    
+
+    # Check for parameter file
+    if ($extension -eq ".bicep") {
+        $defaultParameterFile = $parameterFilePrefix + ".bicepparam"
+        Write-Host "Default parameter file: $defaultParameterFile"
+        if (Test-Path $defaultParameterFile) {
+            return $defaultParameterFile
+        }
+    }
+
     $defaultParameterFile = $parameterFilePrefix + ".parameters.json"
+    Write-Host "Default parameter file: $defaultParameterFile"
     if (Test-Path $defaultParameterFile) {
         return $defaultParameterFile
     }
-    
+
     return $null
 }
 
 function Deployment($fullDeploymentFlag, $remoteShaTable, $tree) {
     Write-Host "Starting Deployment for Files in path: $Directory"
-    if (Test-Path -Path $Directory) 
+    if (Test-Path -Path $Directory)
     {
         $totalFiles = 0;
         $totalFailed = 0;
 	      $iterationList = @()
         $global:prioritizedContentFiles | ForEach-Object  { $iterationList += (AbsolutePathWithSlash $_) }
-        Get-ChildItem -Path $Directory -Recurse -Filter *.json -exclude *metadata.json, *.parameters*.json |
+        Get-ChildItem -Path $Directory -Recurse -Include *.bicep, *.json -exclude *metadata.json, *.parameters*.json, *.bicepparam, bicepconfig.json |
                         Where-Object { $null -eq ( filterContentFile $_.FullName ) } |
                         Select-Object -Property FullName |
                         ForEach-Object { $iterationList += $_.FullName }
@@ -486,14 +497,22 @@ function Deployment($fullDeploymentFlag, $remoteShaTable, $tree) {
                 Write-Host "[Warning] Skipping deployment for $path. The file doesn't exist."
                 return
             }
-            $templateObject = Get-Content $path | Out-String | ConvertFrom-Json
+
+            if ($path -like "*.bicep") {
+                $templateType = "Bicep"
+                $templateObject = bicep build $path --stdout | Out-String | ConvertFrom-Json
+            } else {
+                $templateType = "ARM"
+                $templateObject = Get-Content $path | Out-String | ConvertFrom-Json
+            }
+
             if (-not (IsValidResourceType $templateObject))
             {
                 Write-Host "[Warning] Skipping deployment for $path. The file contains resources for content that was not selected for deployment. Please add content type to connection if you want this file to be deployed."
                 return
-            }       
+            }
             $parameterFile = GetParameterFile $path
-            $result = SmartDeployment $fullDeploymentFlag $remoteShaTable $path $parameterFile $templateObject
+            $result = SmartDeployment $fullDeploymentFlag $remoteShaTable $path $parameterFile $templateObject $templateType
             if ($result.isSuccess -eq $false) {
                 $totalFailed++
             }
@@ -508,19 +527,19 @@ function Deployment($fullDeploymentFlag, $remoteShaTable, $tree) {
             }
         }
         PushCsvToRepo
-        if ($totalFiles -gt 0 -and $totalFailed -gt 0) 
+        if ($totalFiles -gt 0 -and $totalFailed -gt 0)
         {
             $err = "$totalFailed of $totalFiles deployments failed."
             Throw $err
         }
     }
-    else 
+    else
     {
         Write-Output "[Warning] $Directory not found. nothing to deploy"
     }
 }
 
-function SmartDeployment($fullDeploymentFlag, $remoteShaTable, $path, $parameterFile, $templateObject) {
+function SmartDeployment($fullDeploymentFlag, $remoteShaTable, $path, $parameterFile, $templateObject, $templateType) {
     try {
         $skip = $false
         $isSuccess = $null
@@ -536,7 +555,7 @@ function SmartDeployment($fullDeploymentFlag, $remoteShaTable, $path, $parameter
         }
         if (!$skip) {
             $deploymentName = GenerateDeploymentName
-            $isSuccess = AttemptDeployment $path $parameterFile $deploymentName $templateObject    
+            $isSuccess = AttemptDeployment $path $parameterFile $deploymentName $templateObject $templateType
         }
         return @{
             skip = $skip
@@ -559,12 +578,12 @@ function TryGetCsvFile {
     }
 
     $relativeCsvPath = RelativePathWithBackslash $csvPath
-    $resourceBranchExists = git ls-remote --heads "https://github.com/$githubRepository" $newResourceBranch | wc -l 
-    
+    $resourceBranchExists = git ls-remote --heads "https://github.com/$githubRepository" $newResourceBranch | wc -l
+
     if ($resourceBranchExists -eq 1) {
         git fetch > $null
         git checkout $newResourceBranch
-        
+
         if (Test-Path $relativeCsvPath) {
             $global:localCsvTablefinal = ReadCsvToTable
         }
@@ -576,12 +595,6 @@ function main() {
     git config --global user.email "donotreply@microsoft.com"
     git config --global user.name "Sentinel"
 
-    if ($CloudEnv -ne 'AzureCloud') 
-    {
-        Write-Output "Attempting Sign In to Azure Cloud"
-        ConnectAzCloud
-    }
-
     TryGetCsvFile
     LoadDeploymentConfig
     $tree = GetGithubTree
@@ -590,7 +603,7 @@ function main() {
     $existingConfigSha = $global:localCsvTablefinal[$configPath]
     $remoteConfigSha = $remoteShaTable[$configPath]
     $modifiedConfig = ($existingConfigSha -xor $remoteConfigSha) -or ($existingConfigSha -and $remoteConfigSha -and ($existingConfigSha -ne $remoteConfigSha))
-    
+
     if ($remoteConfigSha) {
         $global:updatedCsvTable[$configPath] = $remoteConfigSha
     }
