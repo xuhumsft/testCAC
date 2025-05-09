@@ -9,7 +9,7 @@ name: Deploy Content to TestWkSpace [d8c5ebf1-0027-4963-9a90-14ee7ad076cb]
 #   2. Append the path to the directory environment variable below
 #       directory: '${{ github.workspace }}/SentinelContent'
 
-on: 
+on:
   push:
     branches: [ main_SentinelExport_1676594102 ]
     paths:
@@ -26,55 +26,102 @@ jobs:
       workspaceId: 'd67b16c8-7718-48cc-bb81-6b1d47ccbc3f'
       directory: '${{ github.workspace }}'
       cloudEnv: 'AzurePPE'
-      creds: ${{ secrets.AZURE_SENTINEL_CREDENTIALS_d8c5ebf1002749639a9014ee7ad076cb }}
       contentTypes: 'AnalyticsRule'
       branch: 'main_SentinelExport_1676594102'
       sourceControlId: 'd8c5ebf1-0027-4963-9a90-14ee7ad076cb'
       rootDirectory: '${{ github.workspace }}'
       githubAuthToken: ${{ secrets.GITHUB_TOKEN }}
       smartDeployment: 'true'
+    permissions:
+      contents: write
+      id-token: write # Require write permission to Fetch an OIDC token.
 
     steps:
     - name: Login to Azure (Attempt 1)
       continue-on-error: true
       id: login1
-      uses: azure/login@v1
-      if: ${{ env.cloudEnv == 'AzureCloud' }}
+      uses: azure/powershell@v2
       with:
-        creds: ${{ secrets.AZURE_SENTINEL_CREDENTIALS_d8c5ebf1002749639a9014ee7ad076cb }}
-        enable-AzPSSession: true
+        azPSVersion: 'latest'
+        inlineScript: |
+          Add-AzEnvironment `
+          -Name AzurePPE `
+          -ActiveDirectoryEndpoint https://login.windows-ppe.net `
+          -ResourceManagerEndpoint https://management.azure.com/ `
+          -ActiveDirectoryServiceEndpointResourceId https://management.core.windows.net `
+          -GraphEndpoint https://graph.ppe.windows.net/ | out-null;
+          $oidcTokenParams = @{
+           Uri            = $env:ACTIONS_ID_TOKEN_REQUEST_URL
+           Body           = @{
+                 audience = 'api://AzureADTokenExchange'
+           }
+           Authentication = 'Bearer'
+           Token          = $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN | ConvertTo-SecureString -AsPlainText
+          }
+          $IdToken = (Invoke-RestMethod @oidcTokenParams).value
+          Connect-AzAccount -ServicePrincipal -Tenant ${{ secrets.AZURE_SENTINEL_TENANTID_d8c5ebf1002749639a9014ee7ad076cb }} -Subscription ${{ secrets.AZURE_SENTINEL_SUBSCRIPTIONID_d8c5ebf1002749639a9014ee7ad076cb }} -ApplicationId ${{ secrets.AZURE_SENTINEL_CLIENTID_d8c5ebf1002749639a9014ee7ad076cb }} -Environment AzurePPE -FederatedToken $IdToken | out-null;
 
     - name: Wait 30 seconds if login attempt 1 failed
-      if: ${{ env.cloudEnv == 'AzureCloud' && steps.login1.outcome=='failure' }}
+      if: ${{ steps.login1.outcome=='failure' }}
       run: powershell Start-Sleep -s 30
-    
+
     - name: Login to Azure (Attempt 2)
       continue-on-error: true
       id: login2
-      uses: azure/login@v1
-      if: ${{ env.cloudEnv == 'AzureCloud' && steps.login1.outcome=='failure' }}
+      uses: azure/powershell@v2
       with:
-        creds: ${{ secrets.AZURE_SENTINEL_CREDENTIALS_d8c5ebf1002749639a9014ee7ad076cb }}
-        enable-AzPSSession: true
+        azPSVersion: 'latest'
+        inlineScript: |
+          Add-AzEnvironment `
+          -Name AzurePPE `
+          -ActiveDirectoryEndpoint https://login.windows-ppe.net `
+          -ResourceManagerEndpoint https://management.azure.com/ `
+          -ActiveDirectoryServiceEndpointResourceId https://management.core.windows.net `
+          -GraphEndpoint https://graph.ppe.windows.net/ | out-null;
+          $oidcTokenParams = @{
+           Uri            = $env:ACTIONS_ID_TOKEN_REQUEST_URL
+           Body           = @{
+                 audience = 'api://AzureADTokenExchange'
+           }
+           Authentication = 'Bearer'
+           Token          = $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN | ConvertTo-SecureString -AsPlainText
+          }
+          $IdToken = (Invoke-RestMethod @oidcTokenParams).value
+          Connect-AzAccount -ServicePrincipal -Tenant ${{ secrets.AZURE_SENTINEL_TENANTID_d8c5ebf1002749639a9014ee7ad076cb }} -Subscription ${{ secrets.AZURE_SENTINEL_SUBSCRIPTIONID_d8c5ebf1002749639a9014ee7ad076cb }} -ApplicationId ${{ secrets.AZURE_SENTINEL_CLIENTID_d8c5ebf1002749639a9014ee7ad076cb }} -Environment AzurePPE -FederatedToken $IdToken | out-null;
 
     - name: Wait 30 seconds if login attempt 2 failed
-      if: ${{ env.cloudEnv == 'AzureCloud' && steps.login2.outcome=='failure' }}
+      if: ${{ steps.login2.outcome=='failure' }}
       run: powershell Start-Sleep -s 30
-    
+
     - name: Login to Azure (Attempt 3)
       continue-on-error: false
       id: login3
-      uses: azure/login@v1
-      if: ${{ env.cloudEnv == 'AzureCloud' && steps.login2.outcome=='failure'  }}
+      uses: azure/powershell@v2
       with:
-        creds: ${{ secrets.AZURE_SENTINEL_CREDENTIALS_d8c5ebf1002749639a9014ee7ad076cb }}
-        enable-AzPSSession: true
+        azPSVersion: 'latest'
+        inlineScript: |
+          Add-AzEnvironment `
+          -Name AzurePPE `
+          -ActiveDirectoryEndpoint https://login.windows-ppe.net `
+          -ResourceManagerEndpoint https://management.azure.com/ `
+          -ActiveDirectoryServiceEndpointResourceId https://management.core.windows.net `
+          -GraphEndpoint https://graph.ppe.windows.net/ | out-null;
+          $oidcTokenParams = @{
+           Uri            = $env:ACTIONS_ID_TOKEN_REQUEST_URL
+           Body           = @{
+                 audience = 'api://AzureADTokenExchange'
+           }
+           Authentication = 'Bearer'
+           Token          = $env:ACTIONS_ID_TOKEN_REQUEST_TOKEN | ConvertTo-SecureString -AsPlainText
+          }
+          $IdToken = (Invoke-RestMethod @oidcTokenParams).value
+          Connect-AzAccount -ServicePrincipal -Tenant ${{ secrets.AZURE_SENTINEL_TENANTID_d8c5ebf1002749639a9014ee7ad076cb }} -Subscription ${{ secrets.AZURE_SENTINEL_SUBSCRIPTIONID_d8c5ebf1002749639a9014ee7ad076cb }} -ApplicationId ${{ secrets.AZURE_SENTINEL_CLIENTID_d8c5ebf1002749639a9014ee7ad076cb }} -Environment AzurePPE -FederatedToken $IdToken | out-null;
 
     - name: Checkout
       uses: actions/checkout@v3
-    
-    - name: Deploy Content to Azure Sentinel
-      uses: azure/powershell@v1
+
+    - name: Deploy Content to Microsoft Sentinel
+      uses: azure/powershell@v2
       with:
         azPSVersion: 'latest'
         inlineScript: |
