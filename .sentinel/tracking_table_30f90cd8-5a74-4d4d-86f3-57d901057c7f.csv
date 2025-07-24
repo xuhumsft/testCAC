@@ -1,0 +1,49 @@
+FileName, CommitSha
+SentinelExported-AnalyticsRule/Known ZINC Comebacker and Klackring malware hashes.json,587d1258923f039f960d9d3b7dd3271db5dbe4bb
+SentinelExported-AnalyticsRule/Preview GitHub - User was invited to the repository.json,e67fe832c3c8999ac201f5657455a20663f2f1c2
+SentinelExported-AnalyticsRule/Valid Analytics Rule 2.json,19c38b746f45b3475d420fc9292854dd37f1d14b
+SentinelExported-AnalyticsRule/Cisco Umbrella - Request Allowed to harmful_malicious URI category (1).json,17653a358fbd12e3cf69982b5d1e7ff83c9e3d1a
+SentinelExported-AnalyticsRule/Cisco Umbrella - Request Allowed to harmful_malicious URI category.json,a1fea8dbc2cccd766a78c60853e69b7ada55b7db
+SentinelExported-AnalyticsRule/GitHub Two Factor Auth Disable.json,e999a30bf048212e4c596de70010ee6814bfe267
+SentinelExported-AnalyticsRule/Preview GitHub - Oauth application - a client secret was removed.json,761aad4f50d7e0f75a80a39adb147ec2f99a0a4d
+SentinelExported-AnalyticsRule/(Preview) Microsoft Threat Intelligence Analytics.json,37b219cfeb509fbda2f7070059bdb6390bd79f4a
+SentinelExported-AnalyticsRule/Cisco Umbrella - Connection to Unpopular Website Detected.json,195437a707d661650ce0e3297e9ad6bc2756db2e
+SentinelExported-AnalyticsRule/Cisco Umbrella - Connection to non-corporate private network (1).json,9639fe8756be474975b4cbffdcbff8b49d2827cf
+SentinelExported-AnalyticsRule/Cisco Umbrella - Crypto Miner User-Agent Detected.json,c0dca04f6a06980c7f61bbf46a8c211094e5cd26
+SentinelExported-AnalyticsRule/Cisco Umbrella - Request to blocklisted file type (1).json,d5dbc7e54f6526c023ba7f32dab4fb5811458339
+SentinelExported-AnalyticsRule/Cisco Umbrella - Crypto Miner User-Agent Detected (1).json,5cbaeab625eaf224d7fb02f2472ac67efe8f28eb
+SentinelExported-AnalyticsRule/Cisco Umbrella - Rare User Agent Detected (1).json,0390a18e4799f8ebfaab326bdfb582cb40955a60
+SentinelExported-AnalyticsRule/Cisco Umbrella - Hack Tool User-Agent Detected (1).json,c22dd2d49ccdc51025ca8e31d3f9a2d424aedf36
+SentinelExported-AnalyticsRule/Failed Logins 2.json,c0f59bdd8669ed7126d99e4cab10fd9e61b98451
+SentinelExported-AnalyticsRule/Critical Threat Detected.json,324a5866c37c5aaa48d4883f2c47b7a16948cf8a
+SentinelExported-AnalyticsRule/test.json,67ccb9259f8de00d6b1fad2ba89f73535292c9ac
+SentinelExported-AnalyticsRule/Malformed user agent.json,035d3f335585e210699892543af601a9f5f0c8a4
+SentinelExported-AnalyticsRule/Cisco Umbrella - Hack Tool User-Agent Detected.json,ecc8e53a006e2beec5eab88a8adbc67612ec4bc9
+SentinelExported-AnalyticsRule/Preview GitHub - User visibility Was changed.json,e11fe3d37e8047e4fac9c697c39d157672f647c0
+SentinelExported-AnalyticsRule/ClientDeniedAccess.json,72fa9e71cdd3685a4eb70272669ce51b717c66b6
+SentinelExported-AnalyticsRule/Preview GitHub - User was added to the organization.json,bedb043f6bd3f8100453b22287a7a838dbf9a0fa
+SentinelExported-AnalyticsRule/Preview GitHub - pull request was merged.json,946fa21100a50270a638047c51862d09119238b6
+SentinelExported-AnalyticsRule/Preview GitHub - pull request was created.json,6d737c01b6055342d02ffe6f748e32f47f3505e1
+SentinelExported-AnalyticsRule/Changes to Amazon VPC settings.json,6ab5cc4312965b5bd56b557b9aa5081d20812e6b
+SentinelExported-AnalyticsRule/Palo Alto - possible internal to external port scanning.json,36ec7a805229a1f28855a8b3fd77a2d1344545a5
+SentinelExported-AnalyticsRule/Cisco Umbrella - URI contains IP address (1).json,c26313dba4adfdb5790d08f613b3f21755a2b4ac
+SentinelExported-AnalyticsRule/Cisco Umbrella - Connection to Unpopular Website Detected (1).json,02839cb55972ca101e92a791245f07b381074887
+SentinelExported-AnalyticsRule/Preview GitHub - Repository was destroyed.json,c1aaa8d34d9b5ca6bb37be5444e6daa12c5a05a2
+SentinelExported-AnalyticsRule/Cisco Umbrella - URI contains IP address.json,13c52c6a0935e0c4cdbaae66f5b0be51f17b396d
+SentinelExported-AnalyticsRule/Preview GitHub - User was blocked.json,2b27ff3bd8415034d3cabf8312668918f557383d
+SentinelExported-AnalyticsRule/Cisco Umbrella - Windows PowerShell User-Agent Detected (1).json,e8423262f6375b9d945a71ea16856c60a64582a7
+SentinelExported-AnalyticsRule/Cisco Umbrella - Empty User Agent Detected.json,551034a2452a21983c2f03c68a85d5fb8b7739e1
+SentinelExported-AnalyticsRule/Cisco Umbrella - Empty User Agent Detected (1).json,c3288fbc3d5f39381ca62a0cad82db510900376f
+SentinelExported-AnalyticsRule/Preview GitHub - A payment method was removed.json,f859aeef692744361968a983570ee6e420d01afc
+SentinelExported-AnalyticsRule/Valid Analytics Rule - Microsoft Security 123.json,cc6be33bae9aa61f814b859acb62d71f22e798a9
+SentinelExported-AnalyticsRule/GitHub Activites from a New Country.json,6c53fba0b8be932da1b83288a7dd92b624e5b398
+SentinelExported-AnalyticsRule/(Private Preview) Insider Risk Management_ Sensitive Data Access Outside Organizational Geolocations.json,34ba99911c952693eca86bdbe221bb028ad81501
+SentinelExported-AnalyticsRule/NOBELIUM - suspicious rundll32.exe execution of vbscript (Normalized Process Events).json,c3d63f3e080512731419fe7499295d31bfd574f9
+SentinelExported-AnalyticsRule/Cisco Umbrella - Request to blocklisted file type.json,f06f43c5986ade42dbf25ba5b7e0fc5dcff524a9
+SentinelExported-AnalyticsRule/Cisco Umbrella - Connection to non-corporate private network.json,bc68cfd3844756260d12444b23367950f2ebeaf5
+SentinelExported-AnalyticsRule/Create incidents based on Office 365 Advanced Threat Protection alerts.json,456fc01aa3dd20bd37d6a46cfe6cf73a113aa7d4
+SentinelExported-AnalyticsRule/Cisco Umbrella - Rare User Agent Detected.json,8755fffce897a76f37ef8fefd460bba2f5808a86
+SentinelExported-AnalyticsRule/Potential Password Spray Attack.json,4d291b67332bb95773091b3c471e6383b9858826
+SentinelExported-AnalyticsRule/Cisco Umbrella - Windows PowerShell User-Agent Detected.json,e2df3cb583c01b7132efbdf74c6cff951ab5101f
+SentinelExported-AnalyticsRule/Preview GitHub - Repository was created.json,eb24cdd41a5c6d727e3c58a0756a510d22349a8c
+
