@@ -12,16 +12,16 @@
       "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f7610904-b6aa-43c1-843c-0f1ea29dc52d')]",
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "kind": "MicrosoftSecurityIncidentCreation",
-      "apiVersion": "2022-09-01-preview",
+      "apiVersion": "2023-02-01-preview",
       "properties": {
+        "displayName": "Create incidents based on Office 365 Advanced Threat Protection alerts",
+        "description": "Create incidents based on all alerts generated in Office 365 Advanced Threat Protection",
+        "displayNamesExcludeFilter": null,
+        "displayNamesFilter": null,
         "productFilter": "Office 365 Advanced Threat Protection",
         "severitiesFilter": null,
-        "displayNamesFilter": null,
-        "displayNamesExcludeFilter": null,
-        "displayName": "Create incidents based on Office 365 Advanced Threat Protection alerts",
-        "enabled": true,
-        "description": "Create incidents based on all alerts generated in Office 365 Advanced Threat Protection",
-        "alertRuleTemplateName": null
+        "alertRuleTemplateName": null,
+        "enabled": true
       }
     }
   ]

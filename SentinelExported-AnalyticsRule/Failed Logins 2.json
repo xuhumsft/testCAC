@@ -12,37 +12,43 @@
       "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/19ab7c6a-1ac8-4ebc-86a7-05b0d788d5a7')]",
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "kind": "Scheduled",
-      "apiVersion": "2022-09-01-preview",
+      "apiVersion": "2023-02-01-preview",
       "properties": {
-        "queryFrequency": "PT1H",
-        "queryPeriod": "P2DT1H30M",
-        "triggerOperator": "GreaterThan",
-        "triggerThreshold": 0,
-        "severity": "Medium",
-        "query": "SecurityAlert | take 10",
-        "suppressionDuration": "PT1H",
-        "suppressionEnabled": true,
+        "displayName": "Failed Logins 2",
+        "description": "MPO rule description",
+        "alertDetailsOverride": null,
+        "customDetails": null,
+        "entityMappings": null,
+        "eventGroupingSettings": null,
         "incidentConfiguration": {
           "createIncident": true,
           "groupingConfiguration": {
             "enabled": false,
-            "reopenClosedIncident": false,
+            "groupByAlertDetails": null,
+            "groupByCustomDetails": null,
+            "groupByEntities": [],
             "lookbackDuration": "PT5M",
             "matchingMethod": "AllEntities",
-            "groupByEntities": [],
-            "groupByAlertDetails": null,
-            "groupByCustomDetails": null
+            "reopenClosedIncident": false
           }
         },
+        "query": "SecurityAlert | take 10",
+        "queryPeriod": "P2DT1H30M",
+        "queryFrequency": "PT1H",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": true,
         "tactics": [
           "InitialAccess",
           "Persistence"
         ],
         "techniques": [],
-        "displayName": "Failed Logins 2",
-        "enabled": true,
-        "description": "MPO rule description",
-        "alertRuleTemplateName": null
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": true
       }
     }
   ]

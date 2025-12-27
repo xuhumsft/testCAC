@@ -8,40 +8,46 @@
   },
   "resources": [
     {
-      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/767925ba-d262-413c-a94c-f2d0299a6fc0')]",
-      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/767925ba-d262-413c-a94c-f2d0299a6fc0')]",
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f9860609-5958-46a5-8646-e7a664f9735e')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f9860609-5958-46a5-8646-e7a664f9735e')]",
       "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
       "kind": "Scheduled",
-      "apiVersion": "2022-09-01-preview",
+      "apiVersion": "2023-02-01-preview",
       "properties": {
-        "queryFrequency": "P1D",
-        "queryPeriod": "P14D",
-        "triggerOperator": "GreaterThan",
-        "triggerThreshold": 0,
-        "severity": "Medium",
-        "query": "let lookBack = 14d;\nlet timeframe = 1d;\nlet user_agents_list = Cisco_Umbrella\n| where EventType == \"proxylogs\"\n| where TimeGenerated > ago(lookBack) and TimeGenerated < ago(timeframe)\n| summarize count() by HttpUserAgentOriginal\n| summarize make_list(HttpUserAgentOriginal);\nCisco_Umbrella\n| where EventType == \"proxylogs\"\n| where TimeGenerated > ago(timeframe)\n| where HttpUserAgentOriginal !in (user_agents_list)\n| extend Message = \"Rare User Agent\"\n| project Message, SrcIpAddr, DstIpAddr, UrlOriginal, TimeGenerated, HttpUserAgentOriginal\n| extend IpCustomEntity = SrcIpAddr, UrlCustomEntity = UrlOriginal\n",
-        "suppressionDuration": "PT1H",
-        "suppressionEnabled": false,
+        "displayName": "Cisco Umbrella - Rare User Agent Detected",
+        "description": "Rule helps to detect a rare user-agents indicating web browsing activity by an unusual process other than a web browser.",
+        "alertDetailsOverride": null,
+        "customDetails": null,
+        "entityMappings": null,
+        "eventGroupingSettings": null,
         "incidentConfiguration": {
           "createIncident": true,
           "groupingConfiguration": {
             "enabled": false,
-            "reopenClosedIncident": false,
+            "groupByAlertDetails": null,
+            "groupByCustomDetails": null,
+            "groupByEntities": [],
             "lookbackDuration": "PT5M",
             "matchingMethod": "AllEntities",
-            "groupByEntities": [],
-            "groupByAlertDetails": null,
-            "groupByCustomDetails": null
+            "reopenClosedIncident": false
           }
         },
+        "query": "let lookBack = 14d;\nlet timeframe = 1d;\nlet user_agents_list = Cisco_Umbrella\n| where EventType == \"proxylogs\"\n| where TimeGenerated > ago(lookBack) and TimeGenerated < ago(timeframe)\n| summarize count() by HttpUserAgentOriginal\n| summarize make_list(HttpUserAgentOriginal);\nCisco_Umbrella\n| where EventType == \"proxylogs\"\n| where TimeGenerated > ago(timeframe)\n| where HttpUserAgentOriginal !in (user_agents_list)\n| extend Message = \"Rare User Agent\"\n| project Message, SrcIpAddr, DstIpAddr, UrlOriginal, TimeGenerated, HttpUserAgentOriginal\n| extend IpCustomEntity = SrcIpAddr, UrlCustomEntity = UrlOriginal\n",
+        "queryPeriod": "P14D",
+        "queryFrequency": "P1D",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
         "tactics": [
           "CommandAndControl"
         ],
         "techniques": [],
-        "displayName": "Cisco Umbrella - Rare User Agent Detected",
-        "enabled": false,
-        "description": "Rule helps to detect a rare user-agents indicating web browsing activity by an unusual process other than a web browser.",
-        "alertRuleTemplateName": null
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
       }
     }
   ]
